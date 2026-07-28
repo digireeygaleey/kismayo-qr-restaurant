@@ -10,13 +10,10 @@ import tableRoutes, { tablesRouter } from './routes/tables';
 import orderRoutes, { restaurantOrdersRouter } from './routes/orders';
 import paymentRoutes from './routes/payments';
 import analyticsRoutes from './routes/analytics';
-import { initSocket } from './services/socket';
 
 const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 4000;
-
-initSocket(server);
 
 const origins = [
   process.env.CUSTOMER_URL || 'http://localhost:3000',

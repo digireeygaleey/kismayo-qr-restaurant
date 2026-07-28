@@ -7,7 +7,6 @@ import {
   initiateEvcPlusPayment,
   verifyPaymentCallback,
 } from '../services/payment';
-import { emitOrderUpdate } from '../services/socket';
 
 const router = Router();
 
@@ -63,7 +62,6 @@ router.post('/callback', async (req, res) => {
     include: { items: { include: { menuItem: true } }, table: true },
   });
 
-  emitOrderUpdate(order.restaurantId, order);
   return res.json({ success: true });
 });
 
@@ -79,7 +77,6 @@ router.post('/:orderId/mark-paid', authMiddleware, async (req: AuthRequest, res)
     include: { items: { include: { menuItem: true } }, table: true },
   });
 
-  emitOrderUpdate(updated.restaurantId, updated);
   return res.json(updated);
 });
 

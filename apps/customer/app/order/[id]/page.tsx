@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Order, ORDER_STATUS_LABELS } from '@kismayo/shared';
-import { api, API_URL } from '@/lib/api';
-import { io, Socket } from 'socket.io-client';
+import { api } from '@/lib/api';
 
 const STATUS_STEPS = ['CONFIRMED', 'PREPARING', 'READY', 'SERVED', 'PAID'];
 
@@ -23,9 +22,9 @@ export default function OrderTrackingPage() {
   useEffect(() => {
     if (!orderId) return;
 
-    let socket: Socket | null = null;
+    let channel: ReturnType<Awaited<ReturnType<typeof import('@kismayo/shared/supabase')['createBrowserClient']>>['channel']> | null = null;
 
-    async function load() {
+    async function setup() {
       try {
         const data = await api<Order>(`/api/orders/${orderId}`);
         setOrder(data);
@@ -34,19 +33,22 @@ export default function OrderTrackingPage() {
       } finally {
         setLoading(false);
       }
+
+      const { createBrowserClient } = await import('@kismayo/shared/supabase');
+      const supabase = createBrowserClient();
+      channel = supabase
+        .channel(`order:${orderId}`)
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'Order', filter: `id=eq.${orderId}` },
+          (payload) => {
+            if (payload.new) setOrder(payload.new as Order);
+          }
+        )
+        .subscribe();
     }
-    load();
+    setup();
 
-    socket = io(API_URL, { transports: ['websocket', 'polling'] });
-    socket.on('order-update', (updated: Order) => {
-      if (updated.id === orderId) setOrder(updated);
-    });
-
-    const interval = setInterval(load, 10000);
-    return () => {
-      clearInterval(interval);
-      socket?.disconnect();
-    };
+    return () => { channel?.unsubscribe(); };
   }, [orderId]);
 
   const canCancel = order && ['PENDING', 'CONFIRMED'].includes(order.status);

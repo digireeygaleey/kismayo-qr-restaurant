@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { OrderStatus } from '@prisma/client';
 import { prisma, serializeOrder } from '../lib/prisma';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
-import { emitNewOrder, emitOrderUpdate } from '../services/socket';
 
 const router = Router();
 
@@ -93,7 +92,6 @@ router.post('/', async (req, res) => {
     });
 
     const serialized = serializeOrder(order);
-    emitNewOrder(data.restaurantId, serialized);
 
     // Increment order counts for menu items
     for (const item of data.items) {
@@ -152,7 +150,6 @@ router.post('/:id/cancel', async (req, res) => {
   });
 
   const serialized = serializeOrder(updated);
-  emitOrderUpdate(updated.restaurantId, serialized);
   return res.json(serialized);
 });
 
@@ -207,7 +204,6 @@ router.put('/:id/status', authMiddleware, async (req: AuthRequest, res) => {
   });
 
   const serialized = serializeOrder(order);
-  emitOrderUpdate(order.restaurantId, serialized);
   return res.json(serialized);
 });
 

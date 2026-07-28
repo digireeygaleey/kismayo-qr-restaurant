@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { DashboardStats, Order, AuthUser, TableStatus } from '@kismayo/shared';
-import { api, API_URL } from '@/lib/api';
-import { io } from 'socket.io-client';
+import { api } from '@/lib/api';
 
 const STATUS_STYLES: Record<string, { bg: string; text: string }> = {
   PENDING: { bg: 'bg-amber-50', text: 'text-amber-700' },
@@ -64,16 +63,25 @@ export default function DashboardPage() {
     }
     load();
 
-    const socket = io(API_URL, { transports: ['websocket', 'polling'] });
-    socket.emit('join-restaurant', user.restaurantId);
-    socket.on('new-order', (order: Order) => {
-      setOrders((prev) => [order, ...prev].slice(0, 15));
-    });
-    socket.on('order-update', (order: Order) => {
-      setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
-    });
+    let channel: ReturnType<Awaited<ReturnType<typeof import('@kismayo/shared/supabase')['createBrowserClient']>>['channel']> | null = null;
 
-    return () => { socket.disconnect(); };
+    async function setupRealtime() {
+      const { createBrowserClient } = await import('@kismayo/shared/supabase');
+      const supabase = createBrowserClient();
+      channel = supabase
+        .channel(`restaurant:${user!.restaurantId}`)
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'Order', filter: `restaurantId=eq.${user!.restaurantId}` },
+          async () => {
+            const data = await api<Order[]>(`/api/restaurants/${user!.restaurantId}/orders`);
+            setOrders(data.slice(0, 15));
+          }
+        )
+        .subscribe();
+    }
+    setupRealtime();
+
+    return () => { channel?.unsubscribe(); };
   }, [user]);
 
   const occupiedTables = tables.filter((t) => t.currentOrder);

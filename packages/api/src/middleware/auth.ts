@@ -1,18 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { createClient } from '@supabase/supabase-js';
 import { AuthUser } from '@kismayo/shared';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
 export interface AuthRequest extends Request {
   user?: AuthUser;
 }
 
-export function signToken(payload: AuthUser): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+function getSupabase() {
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  return createClient(url, key);
 }
 
-export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
+export async function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -20,8 +20,25 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
 
   try {
     const token = header.slice(7);
-    const decoded = jwt.verify(token, JWT_SECRET) as AuthUser;
-    req.user = decoded;
+    const supabase = getSupabase();
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const { prisma } = require('../lib/prisma');
+    const dbUser = await prisma.user.findUnique({ where: { authUid: user.id } });
+    if (!dbUser) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    req.user = {
+      id: dbUser.id,
+      name: dbUser.name,
+      email: dbUser.email,
+      role: dbUser.role,
+      restaurantId: dbUser.restaurantId,
+    };
     next();
   } catch {
     return res.status(401).json({ error: 'Invalid token' });

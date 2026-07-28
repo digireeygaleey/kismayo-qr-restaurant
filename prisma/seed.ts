@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { createClient } from '@supabase/supabase-js';
 import QRCode from 'qrcode';
 
 const prisma = new PrismaClient();
@@ -21,7 +21,26 @@ async function main() {
   await prisma.user.deleteMany();
   await prisma.restaurant.deleteMany();
 
-  const passwordHash = await bcrypt.hash('admin123', 10);
+  let authUid: string | undefined;
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (supabaseUrl && supabaseServiceKey) {
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { data, error } = await supabase.auth.admin.createUser({
+      email: 'admin@mecca-hotel.so',
+      password: 'admin123',
+      email_confirm: true,
+    });
+    if (error) {
+      console.warn('Supabase user creation failed (may already exist):', error.message);
+    } else {
+      authUid = data.user.id;
+    }
+  } else {
+    console.warn('SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set — skipping auth user creation.');
+    console.warn('Run `npx tsx prisma/seed.ts` after configuring Supabase credentials in .env');
+  }
 
   const restaurant = await prisma.restaurant.create({
     data: {
@@ -34,9 +53,9 @@ async function main() {
       language: 'so',
       users: {
         create: {
+          authUid,
           name: 'Admin User',
           email: 'admin@mecca-hotel.so',
-          passwordHash,
           role: 'OWNER',
         },
       },
@@ -86,6 +105,11 @@ async function main() {
   }
 
   console.log('Seed complete!');
+  if (!authUid) {
+    console.log('');
+    console.log('⚠ No Supabase user was created. Configure SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY');
+    console.log('  in .env and run `npx tsx prisma/seed.ts` again to create the demo auth user.');
+  }
   console.log('');
   console.log('Demo credentials:');
   console.log('  Email: admin@mecca-hotel.so');

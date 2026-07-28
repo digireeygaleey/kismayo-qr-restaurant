@@ -21,7 +21,12 @@ export default function LoginPage() {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
-      localStorage.setItem('token', data.token);
+      const { createBrowserClient } = await import('@kismayo/shared/supabase');
+      const supabase = createBrowserClient();
+      await supabase.auth.setSession({
+        access_token: data.token,
+        refresh_token: '',
+      });
       localStorage.setItem('user', JSON.stringify(data.user));
       router.push('/dashboard');
     } catch (err) {

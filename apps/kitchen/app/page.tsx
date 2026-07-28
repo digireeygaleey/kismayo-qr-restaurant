@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { io, Socket } from 'socket.io-client';
 import { API_URL } from '@/lib/api';
 import type { Order, OrderStatus } from '@kismayo/shared';
 
@@ -144,7 +143,7 @@ export default function KitchenPage() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [expoMode, setExpoMode] = useState(false);
-  const socketRef = useRef<Socket | null>(null);
+  const channelRef = useRef<Awaited<ReturnType<Awaited<ReturnType<typeof import('@kismayo/shared/supabase')['createBrowserClient']>>['channel']>> | null>(null);
 
   const playAlert = useCallback(() => {
     try {
@@ -184,36 +183,29 @@ export default function KitchenPage() {
 
     fetchActiveOrders(restaurantId, token);
 
-    const socket = io(API_URL, { transports: ['websocket', 'polling'] });
-    socketRef.current = socket;
-
-    socket.on('connect', () => {
-      socket.emit('join-kitchen', restaurantId);
-    });
-
-    socket.on('new-order', (order: Order) => {
-      playAlert();
-      setOrders((prev) => {
-        if (prev.some((o) => o.id === order.id)) return prev;
-        return [...prev, order];
-      });
-    });
-
-    socket.on('order-update', (updated: Order) => {
-      setOrders((prev) => {
-        if (['SERVED', 'PAID', 'CANCELLED'].includes(updated.status)) {
-          return prev.filter((o) => o.id !== updated.id);
-        }
-        return prev.map((o) => (o.id === updated.id ? updated : o));
-      });
-    });
+    async function setupRealtime() {
+      const { createBrowserClient } = await import('@kismayo/shared/supabase');
+      const supabase = createBrowserClient();
+      const channel = supabase
+        .channel(`kitchen:${restaurantId}`)
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'Order', filter: `restaurantId=eq.${restaurantId}` },
+          () => {
+            playAlert();
+            fetchActiveOrders(restaurantId!, token!);
+          }
+        )
+        .subscribe();
+      channelRef.current = channel;
+    }
+    setupRealtime();
 
     const pollInterval = setInterval(() => {
       fetchActiveOrders(restaurantId, token);
     }, 30000);
 
     return () => {
-      socket.disconnect();
+      channelRef.current?.unsubscribe();
       clearInterval(pollInterval);
     };
   }, [token, restaurantId, fetchActiveOrders, playAlert]);
@@ -230,6 +222,14 @@ export default function KitchenPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Login failed');
+
+      const { createBrowserClient } = await import('@kismayo/shared/supabase');
+      const supabase = createBrowserClient();
+      await supabase.auth.setSession({
+        access_token: data.token,
+        refresh_token: '',
+      });
+
       setToken(data.token);
       setRestaurantId(data.user.restaurantId);
       localStorage.setItem('kitchen_token', data.token);

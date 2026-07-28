@@ -20,8 +20,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (pathname === '/login') return;
-    const token = localStorage.getItem('token');
-    if (!token) router.push('/login');
+    async function checkAuth() {
+      const { createBrowserClient } = await import('@kismayo/shared/supabase');
+      const supabase = createBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) router.push('/login');
+    }
+    checkAuth();
   }, [pathname, router]);
 
   if (pathname === '/login') return <>{children}</>;
@@ -54,8 +59,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
           <div className="border-t border-surface-100 p-3">
             <button
-              onClick={() => {
-                localStorage.removeItem('token');
+              onClick={async () => {
+                const { createBrowserClient } = await import('@kismayo/shared/supabase');
+                const supabase = createBrowserClient();
+                await supabase.auth.signOut();
                 localStorage.removeItem('user');
                 router.push('/login');
               }}
@@ -100,8 +107,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </Link>
                 ))}
                 <button
-                  onClick={() => {
-                    localStorage.removeItem('token');
+                  onClick={async () => {
+                    const { createBrowserClient } = await import('@kismayo/shared/supabase');
+                    const supabase = createBrowserClient();
+                    await supabase.auth.signOut();
                     localStorage.removeItem('user');
                     router.push('/login');
                   }}
