@@ -170,6 +170,13 @@ router.put('/:id/status', authMiddleware, async (req: AuthRequest, res) => {
     return res.status(404).json({ error: 'Order not found' });
   }
 
+  if (existing.paymentStatus === 'PAID') {
+    return res.status(400).json({ error: 'Cannot change a paid order' });
+  }
+  if (existing.status === 'CANCELLED') {
+    return res.status(400).json({ error: 'Cannot change a cancelled order' });
+  }
+
   const updateData: Record<string, unknown> = {
     status,
     paymentStatus: status === 'PAID' ? 'PAID' : undefined,

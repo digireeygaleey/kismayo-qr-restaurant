@@ -105,11 +105,19 @@ export default function OrdersPage() {
               </div>
               <div className="text-right">
                 <p className="font-display text-lg font-bold text-ink-900">${order.totalAmount.toFixed(2)}</p>
-                <div className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-surface-100 px-2.5 py-0.5">
-                  <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[order.status] || 'bg-ink-300'}`} />
-                  <span className="text-xs font-medium text-ink-600">
-                    {ORDER_STATUS_LABELS[order.status]}
-                  </span>
+                <div className="inline-flex items-center gap-1.5">
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-surface-100 px-2.5 py-0.5">
+                    <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[order.status] || 'bg-ink-300'}`} />
+                    <span className="text-xs font-medium text-ink-600">
+                      {ORDER_STATUS_LABELS[order.status]}
+                    </span>
+                  </div>
+                  {order.paymentStatus === 'PAID' && (
+                    <div className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5">
+                      <svg className="h-3 w-3 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <span className="text-xs font-medium text-green-700">Paid</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -123,15 +131,22 @@ export default function OrdersPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {STATUSES.filter((s) => s !== order.status).map((status) => (
-                <button
-                  key={status}
-                  onClick={() => updateStatus(order.id, status)}
-                  className="rounded-lg border border-surface-200 px-3 py-1.5 text-xs font-medium text-ink-500 transition-all hover:border-surface-300 hover:bg-surface-50 hover:text-ink-700"
-                >
-                  → {ORDER_STATUS_LABELS[status]}
-                </button>
-              ))}
+              {order.paymentStatus === 'PAID' || order.status === 'CANCELLED' ? (
+                <div className="flex items-center gap-1.5 text-xs text-ink-400">
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  {order.paymentStatus === 'PAID' ? 'Paid — locked' : 'Cancelled'}
+                </div>
+              ) : (
+                STATUSES.filter((s) => s !== order.status).map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => updateStatus(order.id, status)}
+                    className="rounded-lg border border-surface-200 px-3 py-1.5 text-xs font-medium text-ink-500 transition-all hover:border-surface-300 hover:bg-surface-50 hover:text-ink-700"
+                  >
+                    → {ORDER_STATUS_LABELS[status]}
+                  </button>
+                ))
+              )}
             </div>
           </div>
         ))}
