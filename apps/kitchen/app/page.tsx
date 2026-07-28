@@ -89,6 +89,7 @@ function OrderTicket({
           <span className="text-base font-bold text-ink-900">
             Table {order.table?.tableNumber ?? '?'}
           </span>
+          <span className="text-xs text-ink-400">· {order.customerName}</span>
         </div>
         <span className={`text-xs font-bold ${timerColor}`}>{timeAgo(order.createdAt)}</span>
       </div>
@@ -420,13 +421,13 @@ export default function KitchenPage() {
         </div>
       )}
 
-      <div className="grid flex-1 grid-cols-3 gap-4 p-4 overflow-auto">
+      <div className="grid flex-1 grid-cols-3 p-4 overflow-auto gap-0">
         {[
           { key: 'CONFIRMED', orders: confirmed, config: STATUS_CONFIG.CONFIRMED },
           { key: 'PREPARING', orders: preparing, config: STATUS_CONFIG.PREPARING },
           { key: 'READY', orders: ready, config: STATUS_CONFIG.READY },
-        ].map(({ key, orders: colOrders, config }) => (
-          <div key={key} className="flex flex-col">
+        ].map(({ key, orders: colOrders, config }, colIdx) => (
+          <div key={key} className={`flex flex-col ${colIdx < 2 ? 'border-r border-surface-300 pr-4 mr-4' : ''}`}>
             <div className={`flex items-center justify-between rounded-t-xl px-4 py-3 ${config.header}`}>
               <div className="flex items-center gap-2">
                 <svg className="h-4 w-4 text-ink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

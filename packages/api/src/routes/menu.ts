@@ -29,7 +29,6 @@ router.get('/:id/menu', async (req, res) => {
     orderBy: { sortOrder: 'asc' },
     include: {
       menuItems: {
-        where: { isAvailable: true },
         orderBy: { sortOrder: 'asc' },
       },
     },

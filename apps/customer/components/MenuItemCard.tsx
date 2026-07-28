@@ -36,7 +36,10 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
     tags = [];
   }
 
+  const isSoldOut = !item.isAvailable;
+
   const handleAdd = () => {
+    if (isSoldOut) return;
     addItem({
       menuItemId: item.id,
       name: item.name,
@@ -49,7 +52,7 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
   };
 
   return (
-    <div className="group flex gap-4 rounded-2xl border border-surface-100 bg-white p-4 shadow-card transition-all duration-200 hover:shadow-card-hover">
+    <div className={`group flex gap-4 rounded-2xl border bg-white p-4 shadow-card transition-all duration-200 hover:shadow-card-hover ${isSoldOut ? 'border-red-100 opacity-60' : 'border-surface-100'}`}>
       <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface-100">
         {item.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -57,7 +60,12 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
         ) : (
           <span className="text-2xl opacity-40">🍽</span>
         )}
-        {item.isChefSpecial && (
+        {isSoldOut && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
+            <span className="text-[10px] font-bold tracking-wider text-white">SOLD OUT</span>
+          </div>
+        )}
+        {item.isChefSpecial && !isSoldOut && (
           <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-400 text-xs shadow-sm">
             ⭐
           </div>
@@ -66,7 +74,7 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
       <div className="flex flex-1 flex-col">
         <div className="flex items-start gap-2">
           <h3 className="font-medium text-ink-900">{item.name}</h3>
-          {item.isChefSpecial && (
+          {item.isChefSpecial && !isSoldOut && (
             <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
               Chef&apos;s Special
             </span>
@@ -94,23 +102,27 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
               <span className="text-[11px] text-ink-400">~{item.prepTimeMinutes}min</span>
             )}
           </div>
-          <button
-            onClick={handleAdd}
-            className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
-              added
-                ? 'bg-surface-100 text-ink-500'
-                : 'bg-ink-900 text-white active:scale-95'
-            }`}
-          >
-            {added ? (
-              <span className="flex items-center gap-1">
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                Added
-              </span>
-            ) : (
-              'Add'
-            )}
-          </button>
+          {isSoldOut ? (
+            <span className="rounded-lg px-4 py-1.5 text-sm font-medium text-red-500">Unavailable</span>
+          ) : (
+            <button
+              onClick={handleAdd}
+              className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
+                added
+                  ? 'bg-surface-100 text-ink-500'
+                  : 'bg-ink-900 text-white active:scale-95'
+              }`}
+            >
+              {added ? (
+                <span className="flex items-center gap-1">
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  Added
+                </span>
+              ) : (
+                'Add'
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>
