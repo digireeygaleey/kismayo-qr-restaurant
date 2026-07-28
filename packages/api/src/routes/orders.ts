@@ -175,6 +175,14 @@ router.put('/:id/status', authMiddleware, async (req: AuthRequest, res) => {
     paymentStatus: status === 'PAID' ? 'PAID' : undefined,
   };
 
+  if (status === 'CONFIRMED' && !existing.confirmedAt) {
+    updateData.confirmedBy = req.user!.name;
+    updateData.confirmedAt = new Date();
+  }
+  if (status === 'SERVED' && !existing.servedAt) {
+    updateData.servedBy = req.user!.name;
+    updateData.servedAt = new Date();
+  }
   if (status === 'PREPARING' && !existing.prepStartedAt) {
     updateData.prepStartedAt = new Date();
   }

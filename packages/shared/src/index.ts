@@ -83,6 +83,10 @@ export interface Order {
   notes?: string | null;
   prepStartedAt?: string | null;
   prepCompletedAt?: string | null;
+  confirmedBy?: string | null;
+  confirmedAt?: string | null;
+  servedBy?: string | null;
+  servedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   items?: OrderItem[];

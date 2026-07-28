@@ -125,7 +125,7 @@ router.get('/:id/analytics/report', authMiddleware, async (req: AuthRequest, res
     SAHAL: { count: 0, revenue: 0 },
   };
 
-  const periodMap: Record<string, { label: string; orders: number; revenue: number }> = {};
+  const periodMap: Record<string, { key: string; label: string; orders: number; revenue: number }> = {};
   const itemMap: Record<string, { name: string; quantity: number; revenue: number }> = {};
   const uniqueItemIds = new Set<string>();
 
@@ -160,7 +160,7 @@ router.get('/:id/analytics/report', authMiddleware, async (req: AuthRequest, res
     }
 
     if (!periodMap[periodKey]) {
-      periodMap[periodKey] = { label: periodLabel, orders: 0, revenue: 0 };
+      periodMap[periodKey] = { key: periodKey, label: periodLabel, orders: 0, revenue: 0 };
     }
     periodMap[periodKey].orders++;
     periodMap[periodKey].revenue += revenue;
@@ -186,7 +186,7 @@ router.get('/:id/analytics/report', authMiddleware, async (req: AuthRequest, res
 
   const periods = Object.entries(periodMap)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([, val]) => ({ label: val.label, orders: val.orders, revenue: val.revenue }));
+    .map(([, val]) => ({ key: val.key, label: val.label, orders: val.orders, revenue: val.revenue }));
 
   return res.json({
     summary: {

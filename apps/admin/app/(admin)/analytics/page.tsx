@@ -15,7 +15,7 @@ interface ReportData {
     itemCount: number;
   };
   paymentBreakdown: Record<string, { count: number; revenue: number }>;
-  periods: Array<{ label: string; orders: number; revenue: number }>;
+  periods: Array<{ key: string; label: string; orders: number; revenue: number }>;
   topItems: Array<{ name: string; quantity: number; revenue: number }>;
 }
 
@@ -134,7 +134,7 @@ export default function AnalyticsPage() {
               ) : (
                 <div className="flex h-44 items-end gap-2">
                   {report.periods.map((p) => (
-                    <div key={p.label} className="flex flex-1 flex-col items-center gap-1">
+                    <div key={p.key} className="flex flex-1 flex-col items-center gap-1">
                       <span className="text-[10px] font-medium text-ink-400">
                         {p.revenue > 0 ? `$${p.revenue.toFixed(0)}` : ''}
                       </span>

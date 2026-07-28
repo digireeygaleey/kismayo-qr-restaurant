@@ -92,6 +92,16 @@ export default function OrdersPage() {
                 <p className="mt-0.5 text-xs text-ink-300">
                   {new Date(order.createdAt).toLocaleString()}
                 </p>
+                {order.confirmedBy && (
+                  <p className="mt-0.5 text-[11px] text-ink-400">
+                    Confirmed by {order.confirmedBy}{order.confirmedAt ? ` · ${new Date(order.confirmedAt).toLocaleString()}` : ''}
+                  </p>
+                )}
+                {order.servedBy && (
+                  <p className="mt-0.5 text-[11px] text-ink-400">
+                    Served by {order.servedBy}{order.servedAt ? ` · ${new Date(order.servedAt).toLocaleString()}` : ''}
+                  </p>
+                )}
               </div>
               <div className="text-right">
                 <p className="font-display text-lg font-bold text-ink-900">${order.totalAmount.toFixed(2)}</p>

@@ -84,6 +84,10 @@ model Order {
   notes           String?
   prepStartedAt   DateTime?
   prepCompletedAt DateTime?
+  confirmedBy     String?
+  confirmedAt     DateTime?
+  servedBy        String?
+  servedAt        DateTime?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   items           OrderItem[]
