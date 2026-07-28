@@ -1,8 +1,0 @@
-name = "kismayo-kitchen"
-compatibility_date = "2025-01-29"
-pages_build_output_dir = "out"
-
-[vars]
-NEXT_PUBLIC_API_URL = "https://kismayo-api.your-subdomain.workers.dev"
-NEXT_PUBLIC_SUPABASE_URL = "https://rlogscpaetjduaxcoyhe.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsb2dzY3BhZXRqZHVheGNveWhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjQ0NzcsImV4cCI6MjEwMDg0MDQ3N30.VD70ddLsaCSMLnqqolHyJk4zN6Evp9qgoxYJOo0UajE"
