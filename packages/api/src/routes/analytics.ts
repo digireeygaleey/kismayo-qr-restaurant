@@ -86,4 +86,120 @@ router.get('/:id/analytics/peak', authMiddleware, async (req: AuthRequest, res) 
   );
 });
 
+router.get('/:id/analytics/report', authMiddleware, async (req: AuthRequest, res) => {
+  if (req.user!.restaurantId !== req.params.id) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  const period = (req.query.period as string) || 'daily';
+  const now = new Date();
+  let since: Date;
+
+  if (period === 'weekly') {
+    since = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000);
+  } else if (period === 'monthly') {
+    since = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+  } else {
+    since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  }
+
+  const orders = await prisma.order.findMany({
+    where: {
+      restaurantId: req.params.id,
+      createdAt: { gte: since },
+      paymentStatus: 'PAID',
+    },
+    include: {
+      items: {
+        include: {
+          menuItem: { select: { name: true } },
+        },
+      },
+    },
+  });
+
+  const paymentBreakdown: Record<string, { count: number; revenue: number }> = {
+    CASH: { count: 0, revenue: 0 },
+    EVC_PLUS: { count: 0, revenue: 0 },
+    EDAHAB: { count: 0, revenue: 0 },
+    SAHAL: { count: 0, revenue: 0 },
+  };
+
+  const periodMap: Record<string, { label: string; orders: number; revenue: number }> = {};
+  const itemMap: Record<string, { name: string; quantity: number; revenue: number }> = {};
+  const uniqueItemIds = new Set<string>();
+
+  const shortDayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  for (const order of orders) {
+    const revenue = decimalToNumber(order.totalAmount);
+    const pm = order.paymentMethod || 'CASH';
+    if (paymentBreakdown[pm]) {
+      paymentBreakdown[pm].count++;
+      paymentBreakdown[pm].revenue += revenue;
+    }
+
+    const d = order.createdAt;
+    let periodKey: string;
+    let periodLabel: string;
+
+    if (period === 'weekly') {
+      const dayOfWeek = d.getDay();
+      const diff = d.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+      const monday = new Date(d);
+      monday.setDate(diff);
+      periodKey = monday.toISOString().split('T')[0];
+      periodLabel = `${monthNames[monday.getMonth()]} ${monday.getDate()}`;
+    } else if (period === 'monthly') {
+      periodKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      periodLabel = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+    } else {
+      periodKey = d.toISOString().split('T')[0];
+      periodLabel = `${shortDayNames[d.getDay()]} ${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    if (!periodMap[periodKey]) {
+      periodMap[periodKey] = { label: periodLabel, orders: 0, revenue: 0 };
+    }
+    periodMap[periodKey].orders++;
+    periodMap[periodKey].revenue += revenue;
+
+    for (const item of order.items) {
+      const qty = item.quantity;
+      const itemRevenue = decimalToNumber(item.unitPrice) * qty;
+      uniqueItemIds.add(item.menuItemId);
+
+      if (!itemMap[item.menuItemId]) {
+        itemMap[item.menuItemId] = { name: item.menuItem.name, quantity: 0, revenue: 0 };
+      }
+      itemMap[item.menuItemId].quantity += qty;
+      itemMap[item.menuItemId].revenue += itemRevenue;
+    }
+  }
+
+  const totalOrders = orders.length;
+  const totalRevenue = orders.reduce((sum, o) => sum + decimalToNumber(o.totalAmount), 0);
+
+  const topItems = Object.values(itemMap).sort((a, b) => b.quantity - a.quantity);
+  const topItem = topItems[0] || { name: '', quantity: 0, revenue: 0 };
+
+  const periods = Object.entries(periodMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, val]) => ({ label: val.label, orders: val.orders, revenue: val.revenue }));
+
+  return res.json({
+    summary: {
+      totalRevenue,
+      totalOrders,
+      averageOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
+      topItem,
+      itemCount: uniqueItemIds.size,
+    },
+    paymentBreakdown,
+    periods,
+    topItems,
+  });
+});
+
 export default router;
