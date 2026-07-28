@@ -7,6 +7,8 @@
 :root {
   --brand: #e99a11;
   --brand-dark: #cd750b;
+  --surface: #faf9f7;
+  --ink: #1a1a1a;
 }
 
 * {
@@ -14,8 +16,11 @@
 }
 
 body {
-  @apply bg-surface-50 text-ink-900 antialiased;
+  background-color: var(--surface);
+  color: var(--ink);
   font-family: 'DM Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
