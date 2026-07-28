@@ -2,9 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+:root {
+  --brand: #e99a11;
+  --brand-dark: #cd750b;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
 
 body {
-  @apply bg-surface-950 text-white antialiased;
+  @apply bg-surface-50 text-ink-900 antialiased;
   font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+::selection {
+  background: #f9de94;
+  color: #1a1a1a;
+}
+
+@layer utilities {
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }
