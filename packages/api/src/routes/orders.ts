@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { OrderStatus } from '@prisma/client';
 import { prisma, serializeOrder } from '../lib/prisma';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
+
+type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'SERVED' | 'PAID' | 'CANCELLED';
 
 const router = Router();
 
@@ -53,7 +54,8 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Some menu items are unavailable' });
     }
 
-    const itemMap = new Map(menuItems.map((m) => [m.id, m]));
+    const itemMap = new Map<string, (typeof menuItems)[number]>();
+    for (const m of menuItems) itemMap.set(m.id, m);
     let totalAmount = 0;
     const orderItems = data.items.map((item) => {
       const menuItem = itemMap.get(item.menuItemId)!;

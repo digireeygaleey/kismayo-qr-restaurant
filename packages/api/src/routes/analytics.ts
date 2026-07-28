@@ -23,10 +23,10 @@ router.get('/:id/analytics/revenue', authMiddleware, async (req: AuthRequest, re
   });
 
   const byDay: Record<string, number> = {};
-  orders.forEach((o) => {
+  for (const o of orders) {
     const day = o.createdAt.toISOString().split('T')[0];
     byDay[day] = (byDay[day] || 0) + decimalToNumber(o.totalAmount);
-  });
+  }
 
   return res.json(
     Object.entries(byDay)
@@ -48,14 +48,16 @@ router.get('/:id/analytics/popular', authMiddleware, async (req: AuthRequest, re
     take: 10,
   });
 
+  const menuItemIds = items.map((i: typeof items[number]) => i.menuItemId);
   const menuItems = await prisma.menuItem.findMany({
-    where: { id: { in: items.map((i) => i.menuItemId) } },
+    where: { id: { in: menuItemIds } },
   });
 
-  const itemMap = new Map(menuItems.map((m) => [m.id, m]));
+  const itemMap = new Map<string, (typeof menuItems)[number]>();
+  for (const m of menuItems) itemMap.set(m.id, m);
   return res.json(
-    items.map((i) => ({
-      menuItem: itemMap.get(i.menuItemId),
+    items.map((i: typeof items[number]) => ({
+      menuItem: itemMap.get(i.menuItemId) || null,
       totalOrdered: i._sum.quantity,
     }))
   );
@@ -73,10 +75,10 @@ router.get('/:id/analytics/peak', authMiddleware, async (req: AuthRequest, res) 
 
   const byHour: Record<number, number> = {};
   for (let h = 0; h < 24; h++) byHour[h] = 0;
-  orders.forEach((o) => {
+  for (const o of orders) {
     const hour = o.createdAt.getHours();
     byHour[hour]++;
-  });
+  }
 
   return res.json(
     Object.entries(byHour).map(([hour, count]) => ({
@@ -179,7 +181,8 @@ router.get('/:id/analytics/report', authMiddleware, async (req: AuthRequest, res
   }
 
   const totalOrders = orders.length;
-  const totalRevenue = orders.reduce((sum, o) => sum + decimalToNumber(o.totalAmount), 0);
+  let totalRevenue = 0;
+  for (const o of orders) totalRevenue += decimalToNumber(o.totalAmount);
 
   const topItems = Object.values(itemMap).sort((a, b) => b.quantity - a.quantity);
   const topItem = topItems[0] || { name: '', quantity: 0, revenue: 0 };

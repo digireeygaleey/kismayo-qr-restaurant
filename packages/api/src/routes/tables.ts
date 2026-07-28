@@ -1,11 +1,20 @@
 import { Router } from 'express';
 import QRCode from 'qrcode';
 import { z } from 'zod';
-import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 
-type TableWithRestaurant = Prisma.TableGetPayload<{ include: { restaurant: true } }>;
+interface TableWithRestaurant {
+  id: string;
+  restaurantId: string;
+  tableNumber: number;
+  capacity: number;
+  qrCode: string | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  restaurant: { id: string; name: string; slug: string; createdAt: Date; updatedAt: string; isActive: boolean };
+}
 
 const router = Router();
 

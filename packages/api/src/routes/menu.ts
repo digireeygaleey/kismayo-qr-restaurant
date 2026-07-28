@@ -35,7 +35,7 @@ router.get('/:id/menu', async (req, res) => {
   });
 
   return res.json(
-    categories.map((cat) => ({
+    categories.map((cat: typeof categories[number]) => ({
       ...cat,
       menuItems: cat.menuItems.map(serializeMenuItem),
     }))

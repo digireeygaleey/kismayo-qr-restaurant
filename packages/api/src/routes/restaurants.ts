@@ -68,11 +68,12 @@ router.get('/:id/dashboard', authMiddleware, async (req: AuthRequest, res) => {
 
   let avgPrepTimeMinutes = 0;
   if (avgPrep.length > 0) {
-    const totalMinutes = avgPrep.reduce((sum, o) => {
+    let totalMinutes = 0;
+    for (const o of avgPrep) {
       const start = new Date(o.prepStartedAt!).getTime();
       const end = new Date(o.prepCompletedAt!).getTime();
-      return sum + (end - start) / 60000;
-    }, 0);
+      totalMinutes += (end - start) / 60000;
+    }
     avgPrepTimeMinutes = Math.round(totalMinutes / avgPrep.length);
   }
 
@@ -112,7 +113,7 @@ router.get('/:id/table-status', authMiddleware, async (req: AuthRequest, res) =>
   });
 
   return res.json(
-    tables.map((t) => ({
+    tables.map((t: typeof tables[number]) => ({
       id: t.id,
       tableNumber: t.tableNumber,
       capacity: t.capacity,
