@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+  id          String           @id @default(uuid())
+  name        String
+  slug        String           @unique
+  description String?
+  phone       String?
+  address     String?
+  logoUrl     String?
+  currency    String           @default("USD")
+  language    String           @default("so")
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  tables      Table[]
+  categories  Category[]
+  menuItems   MenuItem[]
+  orders      Order[]
+  users       User[]
+  events      AnalyticsEvent[]
+}
+
+model Table {
+  id           String     @id @default(uuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  tableNumber  Int
+  qrCode       String?
+  capacity     Int        @default(4)
+  isActive     Boolean    @default(true)
+  orders       Order[]
+
+  @@unique([restaurantId, tableNumber])
+}
+
+model Category {
+  id           String     @id @default(uuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String
+  sortOrder    Int        @default(0)
+  isActive     Boolean    @default(true)
+  menuItems    MenuItem[]
+}
+
+model MenuItem {
+  id              String      @id @default(uuid())
+  restaurantId    String
+  restaurant      Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  categoryId      String
+  category        Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  price           Decimal     @db.Decimal(10, 2)
+  imageUrl        String?
+  isAvailable     Boolean     @default(true)
+  isChefSpecial   Boolean     @default(false)
+  tags            String      @default("[]")
+  prepTimeMinutes Int?
+  orderCount      Int         @default(0)
+  sortOrder       Int         @default(0)
+  orderItems      OrderItem[]
+}
+
+model Order {
+  id              String         @id @default(uuid())
+  restaurantId    String
+  restaurant      Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  tableId         String
+  table           Table          @relation(fields: [tableId], references: [id])
+  customerName    String
+  customerPhone   String?
+  status          OrderStatus    @default(PENDING)
+  totalAmount     Decimal        @db.Decimal(10, 2)
+  paymentMethod   PaymentMethod?
+  paymentStatus   PaymentStatus  @default(UNPAID)
+  notes           String?
+  prepStartedAt   DateTime?
+  prepCompletedAt DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id                 String   @id @default(uuid())
+  orderId            String
+  order              Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId         String
+  menuItem           MenuItem @relation(fields: [menuItemId], references: [id])
+  quantity           Int
+  unitPrice          Decimal  @db.Decimal(10, 2)
+  subtotal           Decimal  @db.Decimal(10, 2)
+  specialInstructions String?
+}
+
+model User {
+  id           String     @id @default(uuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         UserRole   @default(STAFF)
+  createdAt    DateTime   @default(now())
+}
+
+model AnalyticsEvent {
+  id           String     @id @default(uuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  eventType    String
+  eventData    Json?
+  createdAt    DateTime   @default(now())
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  SERVED
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  EVC_PLUS
+  EDAHAB
+  SAHAL
+  CASH
+  BANK
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+enum UserRole {
+  OWNER
+  MANAGER
+  STAFF
+}

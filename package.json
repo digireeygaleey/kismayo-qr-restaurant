@@ -1,0 +1,32 @@
+{
+  "name": "kismayo-qr-menu",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:customer\" \"npm run dev:admin\" \"npm run dev:kitchen\"",
+    "dev:api": "npm run dev --workspace=@kismayo/api",
+    "dev:customer": "npm run dev --workspace=@kismayo/customer",
+    "dev:admin": "npm run dev --workspace=@kismayo/admin",
+    "dev:kitchen": "npm run dev --workspace=@kismayo/kitchen",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "build": "npm run build --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "concurrently": "^9.1.0",
+    "prisma": "^6.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.1.0"
+  }
+}

@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: kismayo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kismayo
+      POSTGRES_PASSWORD: kismayo123
+      POSTGRES_DB: kismayo_qr
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
