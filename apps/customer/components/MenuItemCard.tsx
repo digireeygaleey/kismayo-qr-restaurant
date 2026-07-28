@@ -49,8 +49,8 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
   };
 
   return (
-    <div className="group flex gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md">
-      <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-100">
+    <div className="group flex gap-4 rounded-2xl border border-surface-100 bg-white p-4 shadow-card transition-all duration-200 hover:shadow-card-hover">
+      <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface-100">
         {item.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
@@ -65,7 +65,7 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
       </div>
       <div className="flex flex-1 flex-col">
         <div className="flex items-start gap-2">
-          <h3 className="font-medium text-gray-900">{item.name}</h3>
+          <h3 className="font-medium text-ink-900">{item.name}</h3>
           {item.isChefSpecial && (
             <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
               Chef&apos;s Special
@@ -73,14 +73,14 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
           )}
         </div>
         {item.description && (
-          <p className="mt-0.5 line-clamp-2 text-[13px] leading-relaxed text-gray-500">{item.description}</p>
+          <p className="mt-0.5 line-clamp-2 text-[13px] leading-relaxed text-ink-400">{item.description}</p>
         )}
         {tags.length > 0 && (
           <div className="mt-1.5 flex flex-wrap gap-1">
             {tags.map((tag) => (
               <span
                 key={tag}
-                className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${TAG_COLORS[tag] || 'bg-gray-100 text-gray-500'}`}
+                className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${TAG_COLORS[tag] || 'bg-surface-100 text-ink-500'}`}
               >
                 {TAG_LABELS[tag] || tag}
               </span>
@@ -89,17 +89,17 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
         )}
         <div className="mt-auto flex items-end justify-between pt-2">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold text-gray-900">${item.price.toFixed(2)}</span>
+            <span className="text-lg font-semibold text-ink-900">${item.price.toFixed(2)}</span>
             {item.prepTimeMinutes && (
-              <span className="text-[11px] text-gray-400">~{item.prepTimeMinutes}min</span>
+              <span className="text-[11px] text-ink-400">~{item.prepTimeMinutes}min</span>
             )}
           </div>
           <button
             onClick={handleAdd}
             className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
               added
-                ? 'bg-gray-100 text-gray-500'
-                : 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95'
+                ? 'bg-surface-100 text-ink-500'
+                : 'bg-ink-900 text-white active:scale-95'
             }`}
           >
             {added ? (

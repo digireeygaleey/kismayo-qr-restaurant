@@ -68,19 +68,19 @@ export default function OrderTrackingPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-emerald-600" />
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-200 border-t-ink-900" />
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-white px-6">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100">
-          <svg className="h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-100">
+          <svg className="h-8 w-8 text-ink-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
         </div>
-        <p className="text-gray-500">Order not found</p>
+        <p className="text-ink-500">Order not found</p>
       </div>
     );
   }
@@ -90,33 +90,33 @@ export default function OrderTrackingPage() {
   const currentStep = isPending ? -1 : STATUS_STEPS.indexOf(order.status);
 
   return (
-    <div className="min-h-screen bg-gray-50 px-5 py-8">
+    <div className="min-h-screen bg-surface-50 px-5 py-8">
       <div className="mx-auto max-w-lg">
         <div className="mb-6 text-center">
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-sm font-medium text-ink-400">
             {isPending ? 'Waiting for payment...' : 'Order placed'}
           </p>
-          <h1 className="mt-1 text-3xl font-bold text-gray-900">
+          <h1 className="mt-1 font-display text-3xl font-bold text-ink-900">
             #{order.id.slice(0, 8).toUpperCase()}
           </h1>
-          <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1">
+          <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-surface-100 px-3 py-1">
             <div className={`h-1.5 w-1.5 rounded-full ${
               isCancelled ? 'bg-red-500' : isPending ? 'bg-amber-500 animate-pulse' : 'bg-green-500'
             }`} />
-            <span className="text-sm font-medium text-gray-600">
+            <span className="text-sm font-medium text-ink-600">
               {ORDER_STATUS_LABELS[order.status] || order.status}
             </span>
           </div>
           {order.table && (
-            <p className="mt-1 text-sm text-gray-500">Table {order.table.tableNumber}</p>
+            <p className="mt-1 text-sm text-ink-400">Table {order.table.tableNumber}</p>
           )}
         </div>
 
         {isPending && (
-          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/50 p-6 text-center">
             <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-2 border-amber-200 border-t-amber-500" />
             <p className="font-medium text-amber-800">Waiting for Payment Confirmation</p>
-            <p className="mt-1 text-sm text-amber-600">
+            <p className="mt-1 text-sm text-amber-600/80">
               Check your phone for the PIN prompt from{' '}
               {order.paymentMethod === 'EVC_PLUS' ? 'EVC Plus' : order.paymentMethod === 'EDAHAB' ? 'eDahab' : 'Sahal'}
             </p>
@@ -124,18 +124,18 @@ export default function OrderTrackingPage() {
         )}
 
         {isCancelled && (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50/50 p-6 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
               <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" /></svg>
             </div>
             <p className="font-medium text-red-800">Order Cancelled</p>
-            <p className="mt-1 text-sm text-red-600">This order has been cancelled.</p>
+            <p className="mt-1 text-sm text-red-600/80">This order has been cancelled.</p>
           </div>
         )}
 
         {!isPending && !isCancelled && (
-          <div className="mb-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-            <h2 className="mb-5 text-sm font-medium text-gray-500">Order Progress</h2>
+          <div className="mb-6 rounded-2xl border border-surface-100 bg-white p-6 shadow-card">
+            <h2 className="mb-5 text-sm font-medium text-ink-500">Order Progress</h2>
             <div className="space-y-0">
               {STATUS_STEPS.map((step, i) => {
                 const isComplete = i <= currentStep;
@@ -148,9 +148,9 @@ export default function OrderTrackingPage() {
                       <div
                         className={`flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 ${
                           isComplete
-                            ? 'bg-emerald-600 text-white'
-                            : 'border-2 border-gray-200 bg-white text-gray-400'
-                        } ${isCurrent ? 'ring-4 ring-emerald-100' : ''}`}
+                            ? 'bg-ink-900 text-white'
+                            : 'border-2 border-surface-200 bg-white text-ink-300'
+                        } ${isCurrent ? 'ring-4 ring-brand-100' : ''}`}
                       >
                         {isComplete ? (
                           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
@@ -159,11 +159,11 @@ export default function OrderTrackingPage() {
                         )}
                       </div>
                       {!isLast && (
-                        <div className={`my-1 h-6 w-0.5 ${isComplete && i < currentStep ? 'bg-emerald-600' : 'bg-gray-200'}`} />
+                        <div className={`my-1 h-6 w-0.5 ${isComplete && i < currentStep ? 'bg-ink-900' : 'bg-surface-200'}`} />
                       )}
                     </div>
                     <div className={`pt-1.5 ${isComplete ? '' : 'opacity-40'}`}>
-                      <p className={`text-sm ${isCurrent ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
+                      <p className={`text-sm ${isCurrent ? 'font-semibold text-ink-900' : 'text-ink-600'}`}>
                         {ORDER_STATUS_LABELS[step as keyof typeof ORDER_STATUS_LABELS]}
                       </p>
                     </div>
@@ -174,40 +174,40 @@ export default function OrderTrackingPage() {
           </div>
         )}
 
-        <div className="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-          <h2 className="mb-3 text-sm font-medium text-gray-500">Items</h2>
-          <div className="divide-y divide-gray-100">
+        <div className="mb-6 rounded-2xl border border-surface-100 bg-white p-5 shadow-card">
+          <h2 className="mb-3 text-sm font-medium text-ink-500">Items</h2>
+          <div className="divide-y divide-surface-100">
             {order.items?.map((item) => (
               <div key={item.id} className="flex justify-between py-2.5 first:pt-0 last:pb-0">
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-ink-600">
                   {item.quantity}x {item.menuItem?.name || 'Item'}
                 </span>
-                <span className="text-sm font-medium text-gray-900">${item.subtotal.toFixed(2)}</span>
+                <span className="text-sm font-medium text-ink-900">${item.subtotal.toFixed(2)}</span>
               </div>
             ))}
           </div>
-          <div className="mt-3 flex justify-between border-t border-gray-100 pt-3">
-            <span className="font-medium text-gray-500">Total</span>
-            <span className="text-lg font-bold text-gray-900">${order.totalAmount.toFixed(2)}</span>
+          <div className="mt-3 flex justify-between border-t border-surface-100 pt-3">
+            <span className="font-medium text-ink-500">Total</span>
+            <span className="font-display text-lg font-bold text-ink-900">${order.totalAmount.toFixed(2)}</span>
           </div>
         </div>
 
         {order.paymentStatus === 'UNPAID' && order.status === 'SERVED' && (
-          <div className="mb-6 rounded-2xl border border-gray-100 bg-white p-5 text-center shadow-sm">
-            <p className="mb-1 font-medium text-gray-700">Ready to pay?</p>
-            <p className="text-sm text-gray-500">
+          <div className="mb-6 rounded-2xl border border-surface-100 bg-white p-5 text-center shadow-card">
+            <p className="mb-1 font-medium text-ink-700">Ready to pay?</p>
+            <p className="text-sm text-ink-400">
               Pay with {order.paymentMethod || 'cash'} when the waiter arrives
             </p>
           </div>
         )}
 
         {order.paymentStatus === 'PAID' && (
-          <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 p-5 text-center">
+          <div className="mb-6 rounded-2xl border border-green-200 bg-green-50/50 p-5 text-center">
             <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
               <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
             </div>
             <p className="font-medium text-green-800">Payment Complete</p>
-            <p className="text-sm text-green-600">Thank you for dining with us</p>
+            <p className="text-sm text-green-600/80">Thank you for dining with us</p>
           </div>
         )}
 
@@ -221,15 +221,15 @@ export default function OrderTrackingPage() {
         )}
 
         {showCancelConfirm && (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-5">
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50/50 p-5">
             <p className="mb-1 text-center font-medium text-red-800">Cancel this order?</p>
-            <p className="mb-4 text-center text-sm text-red-600">
+            <p className="mb-4 text-center text-sm text-red-600/80">
               This cannot be undone.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowCancelConfirm(false)}
-                className="flex-1 rounded-xl border border-gray-200 bg-white px-6 py-3.5 font-medium text-gray-700 transition-all hover:border-gray-300 hover:shadow-sm active:scale-[0.98]"
+                className="flex-1 rounded-xl border border-surface-200 bg-white px-6 py-3.5 font-medium text-ink-700 transition-all duration-200 hover:border-surface-300 hover:shadow-card active:scale-[0.98]"
               >
                 Keep Order
               </button>
@@ -248,14 +248,14 @@ export default function OrderTrackingPage() {
           {slug && (
             <Link
               href={`/menu/${slug}?table=${tableNum}`}
-              className="block w-full rounded-xl bg-emerald-600 px-6 py-3.5 text-center font-medium text-white transition-all hover:bg-emerald-700 hover:shadow-lg active:scale-[0.98]"
+              className="block w-full rounded-xl bg-ink-900 px-6 py-3.5 text-center font-medium text-white transition-all duration-200 hover:bg-ink-800 hover:shadow-elevated active:scale-[0.98]"
             >
               Order More
             </Link>
           )}
           <Link
             href={`/menu/${slug || 'mecca-hotel'}?table=${tableNum}`}
-            className="block w-full rounded-xl border border-gray-200 bg-white px-6 py-3.5 text-center font-medium text-gray-700 transition-all hover:border-gray-300 hover:shadow-sm active:scale-[0.98]"
+            className="block w-full rounded-xl border border-surface-200 bg-white px-6 py-3.5 text-center font-medium text-ink-700 transition-all duration-200 hover:border-surface-300 hover:shadow-card active:scale-[0.98]"
           >
             Back to Menu
           </Link>
