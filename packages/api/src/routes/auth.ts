@@ -7,8 +7,11 @@ import { authMiddleware, AuthRequest } from '../middleware/auth';
 const router = Router();
 
 function getSupabase() {
-  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error('Supabase URL and key must be configured');
+  }
   return createClient(url, key);
 }
 
@@ -74,14 +77,19 @@ router.post('/register', async (req, res) => {
       restaurantId: restaurant.id,
     };
 
-    const { data: sessionData } = await supabase.auth.signInWithPassword({
+    const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
     });
 
+    if (sessionError || !sessionData.session) {
+      return res.status(500).json({ error: 'Registration succeeded but login failed' });
+    }
+
     return res.status(201).json({
-      token: sessionData?.session?.access_token || '',
-      user: { ...authUser, restaurant },
+      token: sessionData.session.access_token,
+      user: authUser,
+      restaurant,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -123,9 +131,14 @@ router.post('/login', async (req, res) => {
       restaurantId: user.restaurantId,
     };
 
+    if (!authData.session) {
+      return res.status(500).json({ error: 'Login succeeded but no session returned' });
+    }
+
     return res.json({
-      token: authData.session?.access_token || '',
-      user: { ...authUser, restaurant: user.restaurant },
+      token: authData.session.access_token,
+      user: authUser,
+      restaurant: user.restaurant,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

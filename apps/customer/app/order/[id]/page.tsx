@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useParams } from 'next/navigation';
 import Link from 'next/link';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { Order, ORDER_STATUS_LABELS } from '@kismayo/shared';
 import { api } from '@/lib/api';
 
@@ -22,7 +23,7 @@ export default function OrderTrackingPage() {
   useEffect(() => {
     if (!orderId) return;
 
-    let channel: ReturnType<Awaited<ReturnType<typeof import('@kismayo/shared/supabase')['createBrowserClient']>>['channel']> | null = null;
+    let channel: RealtimeChannel | null = null;
 
     async function setup() {
       try {

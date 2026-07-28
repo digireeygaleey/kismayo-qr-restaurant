@@ -17,7 +17,15 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "build": "npm run build --workspaces --if-present"
+    "build": "npm run build --workspaces --if-present",
+    "build:admin": "npm run build --workspace=@kismayo/admin",
+    "build:kitchen": "npm run build --workspace=@kismayo/kitchen",
+    "build:customer": "cd apps/customer && npx @cloudflare/next-on-pages",
+    "build:worker": "cd workers/api && npx wrangler deploy --dry-run",
+    "deploy:admin": "npx wrangler pages deploy apps/admin/out --project-name=kismayo-admin",
+    "deploy:kitchen": "npx wrangler pages deploy apps/kitchen/out --project-name=kismayo-kitchen",
+    "deploy:customer": "cd apps/customer && npx @cloudflare/next-on-pages && npx wrangler pages deploy .vercel/output/static --project-name=kismayo-menu",
+    "deploy:worker": "cd workers/api && npx wrangler deploy"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

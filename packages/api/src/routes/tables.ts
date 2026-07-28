@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import QRCode from 'qrcode';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
+
+type TableWithRestaurant = Prisma.TableGetPayload<{ include: { restaurant: true } }>;
 
 const router = Router();
 
@@ -61,9 +64,9 @@ const tablesRouter = Router();
 
 tablesRouter.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
   const table = await prisma.table.findUnique({
-    where: { id: req.params.id as string },
+    where: { id: req.params.id },
     include: { restaurant: true },
-  }) as any;
+  }) as TableWithRestaurant | null;
   if (!table || table.restaurantId !== req.user!.restaurantId) {
     return res.status(404).json({ error: 'Table not found' });
   }
@@ -90,9 +93,9 @@ tablesRouter.delete('/:id', authMiddleware, async (req: AuthRequest, res) => {
 
 tablesRouter.get('/:id/qr', async (req, res) => {
   const table = await prisma.table.findUnique({
-    where: { id: req.params.id as string },
+    where: { id: req.params.id },
     include: { restaurant: true },
-  }) as any;
+  }) as TableWithRestaurant | null;
   if (!table) return res.status(404).json({ error: 'Table not found' });
 
   let qrCode = table.qrCode;
@@ -101,7 +104,7 @@ tablesRouter.get('/:id/qr', async (req, res) => {
     await prisma.table.update({ where: { id: table.id }, data: { qrCode } });
   }
 
-  return res.json({ qrCode, tableNumber: table.tableNumber, restaurant: (table as any).restaurant.name });
+  return res.json({ qrCode, tableNumber: table.tableNumber, restaurant: table.restaurant.name });
 });
 
 export { tablesRouter };

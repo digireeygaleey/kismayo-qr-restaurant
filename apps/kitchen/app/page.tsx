@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { API_URL } from '@/lib/api';
 import type { Order, OrderStatus } from '@kismayo/shared';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 const ORDER_FLOW: OrderStatus[] = ['CONFIRMED', 'PREPARING', 'READY', 'SERVED'];
 
@@ -143,7 +144,7 @@ export default function KitchenPage() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [expoMode, setExpoMode] = useState(false);
-  const channelRef = useRef<Awaited<ReturnType<Awaited<ReturnType<typeof import('@kismayo/shared/supabase')['createBrowserClient']>>['channel']>> | null>(null);
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
   const playAlert = useCallback(() => {
     try {
